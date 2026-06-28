@@ -4,6 +4,8 @@ ROOT_PASSWORD: init password, can change
 
 ssh:   ip:22
 
+application: http://ipaddrress
+
 ttyd:  http://ip/ttyd
 
 filebrowser:  http://ip/filebrowser
