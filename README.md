@@ -19,17 +19,36 @@ networks:
       config:
         - subnet: "192.168.13.0/24"
           gateway: "192.168.13.1"
+volumes:
+  moss-tts-nano-root:
+    name: moss-tts-nano-root
+    driver: local
+    driver_opts:
+      o: bind
+      type: none
+      device: ./volumes/moss-tts-nano/root
+  moss-tts-nano-workspace:
+    name: moss-tts-nano-workspace
+    driver: local
+    driver_opts:
+      o: bind
+      type: none
+      device: ./volumes/moss-tts-nano/workspace
 services:
-  debian-trixie:
-    container_name: "debian-trixie"
-    hostname: "debian-trixie"
-    build:
-      context: https://github.com/sleechengn/debian-trixie
-      dockerfile: Dockerfile
-    restart: unless-stopped
+  moss-tts-nano:
+    container_name: "moss-tts-nano"
+    hostname: "moss-tts-nano"
+    image: "192.168.13.73:5000/sleechengn/openmoss-tts-nano"
+    restart: always
+    cap_add:
+      - NET_ADMIN
     environment:
-      - ROOT_PASSWORD=123456
       - TZ=Asia/Shanghai
+      #- HF_ENDPOINT=https://hf-mirror.com
+    volumes:
+      - "/mnt:/mnt"
+      - "moss-tts-nano-root:/root"
+      - "moss-tts-nano-workspace:/workspace"
     networks:
       lan13:
         ipv4_address: 192.168.13.65
