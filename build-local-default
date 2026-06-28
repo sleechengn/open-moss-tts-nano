@@ -1,0 +1,35 @@
+#!/usr/bin/env bash
+set -e
+
+export DOCKER_BUILDKIT=1
+
+rm -rf $(dirname $0)/Dockerfile.run.build
+cp $(dirname $0)/Dockerfile $(dirname $0)/Dockerfile.run.build
+
+
+sed -i '/from debian:trixie/i\# HEAD LINE' Dockerfile.run.build
+sed -i '/from debian:trixie/a\# RUN LINE' Dockerfile.run.build
+
+sed -i 's#from debian:trixie#from 192.168.13.73:5000/debian:trixie#g' Dockerfile.run.build
+
+sed -i '/# HEAD LINE/i\# syntax=192.168.13.73:5000/docker/dockerfile:1.3' Dockerfile.run.build
+
+sed -i '/# RUN LINE/i\run apt update' Dockerfile.run.build
+sed -i '/# RUN LINE/i\run apt install -y apt-transport-https ca-certificates' Dockerfile.run.build
+sed -i '/# RUN LINE/i\run sed -i "s,http://deb.debian.org/,https://mirrors.tuna.tsinghua.edu.cn/,g" /etc/apt/sources.list.d/debian.sources' Dockerfile.run.build
+sed -i '/# RUN LINE/i\run apt update' Dockerfile.run.build
+
+sed -i '/# UV INSTALL/i\ENV UV_INDEX_STRATEGY=unsafe-best-match' Dockerfile.run.build
+sed -i '/# UV INSTALL/i\ENV UV_INSECURE_HOST=192.168.13.86' Dockerfile.run.build
+sed -i '/# UV INSTALL/i\ENV UV_DEFAULT_INDEX=http://192.168.13.86:3141/root/pypi' Dockerfile.run.build
+sed -i '/# UV INSTALL/i\ENV UV_EXTRA_INDEX_URL=http://192.168.13.86:3141/root/cu128' Dockerfile.run.build
+
+sed -i '/# UV INSTALL/i\ENV PIP_TRUSTED_HOST=192.168.13.86' Dockerfile.run.build
+sed -i '/# UV INSTALL/i\ENV PIP_INDEX_URL=http://192.168.13.86:3141/root/pypi-ts' Dockerfile.run.build
+sed -i '/# UV INSTALL/i\ENV PIP_EXTRA_INDEX_URL=http://192.168.13.86:3141/root/cu128' Dockerfile.run.build
+
+
+time ./build.sh 192.168.13.73:5000/sleechengn/openmoss-tts-nano:latest
+time docker push 192.168.13.73:5000/sleechengn/openmoss-tts-nano:latest
+./build.sh sleechengn/openmoss-tts-nano:latest
+rm -rf $(dirname $0)/Dockerfile.run.build
